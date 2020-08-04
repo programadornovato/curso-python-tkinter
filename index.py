@@ -14,7 +14,13 @@ class Alumno:
         Label(marco,text="Clave").grid(row=1,column=0)
         Entry(marco).grid(row=1,column=1)
         #Boton
-        ttk.Button(marco,text="Guardar alumno").grid(row=2,columnspan=2,sticky=W+E)
+        ttk.Button(marco,text="Guardar alumno",command=self.mostrarDatos).grid(row=2,columnspan=2,sticky=W+E)
+        #Tabla
+        self.tabla=ttk.Treeview(self.ventana,columns=2)
+        self.tabla.grid(row=4,column=0,columnspan=2)
+        self.tabla.heading("#0",text="Nombre",anchor=CENTER)
+        self.tabla.heading("#1",text="Clave",anchor=CENTER)
+
     def consulataAlumnos(self,query):
         try:
             conn=mariadb.connect(
@@ -29,9 +35,12 @@ class Alumno:
         cur.execute(query)
         return cur
     def mostrarDatos(self):
+        registros=self.tabla.get_children()
+        for registro in registros:
+            self.tabla.delete(registro)
         cur=self.consulataAlumnos("SELECT `nombre`,`clave` FROM `alumnos`")
         for (nombre,clave) in cur:
-            print(nombre,clave)
+            self.tabla.insert('',0,text=nombre,values=clave)
 
 if __name__=="__main__":
     ventana=Tk()
