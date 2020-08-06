@@ -17,13 +17,17 @@ class Alumno:
         self.clave=Entry(marco)
         self.clave.grid(row=1,column=1)
         #Boton
-        ttk.Button(marco,text="Guardar alumno",command=self.agregarRegistro).grid(row=2,columnspan=2,sticky=W+E)
+        self.crear=ttk.Button(marco,text="Crear alumno",command=self.agregarRegistro)
+        self.crear.grid(row=2,columnspan=2,sticky=W+E)
+        self.editar=ttk.Button(marco,text="Editar alumno",command=self.editarRegistro)
+        self.editar.grid(row=3,columnspan=2,sticky=W+E)
         #Mensaje
         self.mensaje=Label(text='',fg='green')
-        self.mensaje.grid(row=3,column=0,columnspan=2,sticky=W+E)
+        self.mensaje.grid(row=4,column=0,columnspan=2,sticky=W+E)
         #Tabla
         self.tabla=ttk.Treeview(self.ventana,columns=2)
-        self.tabla.grid(row=4,column=0,columnspan=2)
+        self.tabla.bind("<Double-Button-1>",self.doubleClickTabla)
+        self.tabla.grid(row=5,column=0,columnspan=2)
         self.tabla.heading("#0",text="Nombre",anchor=CENTER)
         self.tabla.heading("#1",text="Clave",anchor=CENTER)
 
@@ -58,6 +62,28 @@ class Alumno:
         else:
             self.mensaje['text']="El nombre y la clave del alumno no pueden estar vacias humano tonto"
         self.mostrarDatos()
+    def editarRegistro(self):
+        if len(self.nombre.get())!=0 and len(self.clave.get())!=0:
+            query="UPDATE alumnos set nombre='"+self.nombre.get()+"',clave='"+self.clave.get()+"' where clave='"+self.claveVieja+"'; "
+            self.queryAlumnos(query)
+            self.mensaje['text']="El alumno "+self.nombre.get()+" se a actualizado exitosamente"
+            self.nombre.delete(0,END)
+            self.clave.delete(0,END)
+            self.nombre.focus()
+        else:
+            self.mensaje['text']="El nombre y la clave del alumno no pueden estar vacias humano tonto"
+        self.mostrarDatos()
+        self.crear["state"]="normal"
+        self.editar["state"]="disabled"
+    def doubleClickTabla(self,event):
+        self.claveVieja=str(self.tabla.item(self.tabla.selection())["values"][0])
+        self.nombre.delete(0,END)
+        self.clave.delete(0,END)
+        self.crear["state"]="disable"
+        self.editar["state"]="normal"
+        self.nombre.insert(0,str(self.tabla.item(self.tabla.selection())["text"]))
+        self.clave.insert(0,str(self.tabla.item(self.tabla.selection())["values"][0]))
+
 if __name__=="__main__":
     ventana=Tk()
     aplicacion=Alumno(ventana)
