@@ -30,10 +30,20 @@ class Alumno:
         #Mensaje
         self.mensaje=Label(text='',fg='green')
         self.mensaje.grid(row=5,column=0,columnspan=2,sticky=W+E)
+        #Buscar nombre
+        Label(self.ventana,text="Buscar nombre").grid(row=6,column=0)
+        self.buscarNombre=Entry(self.ventana)
+        self.buscarNombre.grid(row=6,column=1)
+        #Clave
+        Label(self.ventana,text="buscar clave").grid(row=7,column=0)
+        self.buscarClave=Entry(self.ventana)
+        self.buscarClave.grid(row=7,column=1)
+        #Boton buscar
+        Button(self.ventana,text="Buscar alumno",command=self.buscarRegistro,bg="white",fg="black").grid(row=8,columnspan=2,sticky=W+E)
         #Tabla
         self.tabla=ttk.Treeview(self.ventana,columns=2)
         self.tabla.bind("<Double-Button-1>",self.doubleClickTabla)
-        self.tabla.grid(row=6,column=0,columnspan=2)
+        self.tabla.grid(row=9,column=0,columnspan=2)
         self.tabla.heading("#0",text="Nombre",anchor=CENTER)
         self.tabla.heading("#1",text="Clave",anchor=CENTER)
 
@@ -50,11 +60,15 @@ class Alumno:
         cur=conn.cursor()
         cur.execute(query)
         return cur
-    def mostrarDatos(self):
+    def mostrarDatos(self,where=""):
         registros=self.tabla.get_children()
         for registro in registros:
             self.tabla.delete(registro)
-        cur=self.queryAlumnos("SELECT `nombre`,`clave` FROM `alumnos`")
+        if len(where)>0:
+            cur=self.queryAlumnos("SELECT `nombre`,`clave` FROM `alumnos` "+where)
+        else:
+            cur=self.queryAlumnos("SELECT `nombre`,`clave` FROM `alumnos`")
+
         for (nombre,clave) in cur:
             self.tabla.insert('',0,text=nombre,values=clave)
     def agregarRegistro(self):
@@ -103,7 +117,13 @@ class Alumno:
             self.crear["state"]="normal"
             self.editar["state"]="disabled"
             self.borrar["state"]="disabled"
-
+    def buscarRegistro(self):
+        where=" where 1=1 "
+        if len(self.buscarNombre.get())>0 :
+            where=where+" and nombre='"+self.buscarNombre.get()+"' "
+        if len(self.buscarClave.get())>0 :
+            where=where+" and clave='"+self.buscarClave.get()+"' "
+        self.mostrarDatos(where)
 if __name__=="__main__":
     ventana=Tk()
     aplicacion=Alumno(ventana)
