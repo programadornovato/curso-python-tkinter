@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 import mariadb
 class Alumno:
     def __init__(self,ventana):
@@ -17,17 +18,22 @@ class Alumno:
         self.clave=Entry(marco)
         self.clave.grid(row=1,column=1)
         #Boton
-        self.crear=ttk.Button(marco,text="Crear alumno",command=self.agregarRegistro)
+        self.crear=Button(marco,text="Crear alumno",command=self.agregarRegistro,bg="green",fg="white")
         self.crear.grid(row=2,columnspan=2,sticky=W+E)
-        self.editar=ttk.Button(marco,text="Editar alumno",command=self.editarRegistro)
+        self.editar=Button(marco,text="Editar alumno",command=self.editarRegistro,bg="yellow")
         self.editar.grid(row=3,columnspan=2,sticky=W+E)
+        self.editar["state"]="disabled"
+        self.borrar=Button(marco,text="Borrar alumno",command=self.borrarRegistro,bg="red",fg="white")
+        self.borrar.grid(row=4,columnspan=2,sticky=W+E)
+        self.borrar["state"]="disabled"
+
         #Mensaje
         self.mensaje=Label(text='',fg='green')
-        self.mensaje.grid(row=4,column=0,columnspan=2,sticky=W+E)
+        self.mensaje.grid(row=5,column=0,columnspan=2,sticky=W+E)
         #Tabla
         self.tabla=ttk.Treeview(self.ventana,columns=2)
         self.tabla.bind("<Double-Button-1>",self.doubleClickTabla)
-        self.tabla.grid(row=5,column=0,columnspan=2)
+        self.tabla.grid(row=6,column=0,columnspan=2)
         self.tabla.heading("#0",text="Nombre",anchor=CENTER)
         self.tabla.heading("#1",text="Clave",anchor=CENTER)
 
@@ -75,14 +81,28 @@ class Alumno:
         self.mostrarDatos()
         self.crear["state"]="normal"
         self.editar["state"]="disabled"
+        self.borrar["state"]="disabled"
     def doubleClickTabla(self,event):
         self.claveVieja=str(self.tabla.item(self.tabla.selection())["values"][0])
         self.nombre.delete(0,END)
         self.clave.delete(0,END)
         self.crear["state"]="disable"
         self.editar["state"]="normal"
+        self.borrar["state"]="normal"
         self.nombre.insert(0,str(self.tabla.item(self.tabla.selection())["text"]))
         self.clave.insert(0,str(self.tabla.item(self.tabla.selection())["values"][0]))
+    def borrarRegistro(self):
+        if messagebox.askyesno(message="¿Realmente deseas borrar el registro?",title="Borrar alumno")==True:
+            query="delete from alumnos where clave='"+self.claveVieja+"' "
+            self.queryAlumnos(query)
+            self.mensaje['text']="El alumno "+self.nombre.get()+" se a borrado exitosamente"
+            self.nombre.delete(0,END)
+            self.clave.delete(0,END)
+            self.nombre.focus()
+            self.mostrarDatos()
+            self.crear["state"]="normal"
+            self.editar["state"]="disabled"
+            self.borrar["state"]="disabled"
 
 if __name__=="__main__":
     ventana=Tk()
